@@ -1,7 +1,7 @@
 const dummy = (blogs) => {
   return blogs.length === 0
     ? 1
-    : blogs.length
+    : 1
 }
 
 const totalLikes = (array) => {
@@ -14,6 +14,14 @@ const totalLikes = (array) => {
     : array.reduce(reducer, 0)
 }
 
+const favoriteBlog = (blogs) => {
+  const mostLiked = Math.max(...blogs.map(e => e.likes))
+  const blog = blogs.indexOf(blogs.find(e => e.likes === mostLiked))
+  return blogs[blog]
+}
+
 module.exports = {
-  dummy, totalLikes
+  dummy,
+  totalLikes,
+  favoriteBlog
 }
