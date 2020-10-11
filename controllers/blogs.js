@@ -2,27 +2,23 @@ const blogsRouter = require('express').Router()
 // const logger = require('../utils/logger')
 const Blog = require('../models/blog')
 
-blogsRouter.get('/', (request, response, next) => {
-  Blog
-    .find({})
-    .then(blogs => {
-      if (blogs) {
-        response.json(blogs)
-      } else {
-        response.status(500).end()
-      }
-    })
-    .catch(e => {
+blogsRouter.get('/', async (request, response, next) => {
+  const blogs = await Blog.find({})
+  try {
+    if (blogs) {
+      response.json(blogs)
+    } else {
       response.status(500).end()
-      next(e)
-    })
+    }
+  } catch (error) {
+    next(error)
+  }
 })
 
-blogsRouter.post('/', (request, response, next) => {
+blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
-  // logger.info(body)
 
-  if (!body || !body.title || !body.author) {
+  if (!body || !body.title || !body.author || !body.url) {
     return response.status(400).json({
       error: 'Content missing'
     })
@@ -32,16 +28,15 @@ blogsRouter.post('/', (request, response, next) => {
     title: body.title,
     author: body.author,
     url: body.url,
-    likes: body.likes
+    likes: body.likes || 0
   })
 
-  blog
-    .save()
-    .then(savedBlog => savedBlog.toJSON())
-    .then(savedAndFormatedBlog => {
-      response.json(savedAndFormatedBlog)
-    })
-    .catch(error => next(error))
+  const savedBlog = await blog.save()
+  try {
+    response.json(savedBlog)
+  } catch (error) {
+    next(error)
+  }
 })
 
 module.exports = blogsRouter
