@@ -116,6 +116,60 @@ describe('api tests', () => {
   })
 
 })
+
+describe('viewing a specific blog', () => {
+
+  test('succeeds with a valid id', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+
+    const blogToView = blogsAtStart[0]
+
+    const resultNote = await api
+      .get(`/api/blogs/${blogToView.id}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const processedBlogToView = JSON.parse(JSON.stringify(blogToView))
+
+    expect(resultNote.body).toEqual(processedBlogToView)
+  })
+
+  test('fails with statuscode 404 if note does not exist', async () => {
+    const validNonexistingId = await helper.nonExistingId()
+
+    console.log('valid but non existing ID:', validNonexistingId)
+
+    await api
+      .get(`/api/blogs/${validNonexistingId}`)
+      .expect(404)
+  })
+
+  test('fails with statuscode 400 id is invalid', async () => {
+    const invalidId = '5a3d5da59070081a82a3445'
+
+    await api
+      .get(`/api/blogs/${invalidId}`)
+      .expect(400)
+  })
+})
+
+describe('deleting a blog', () => {
+  test('a blog can be deleted', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1)
+
+    const titles = blogsAtEnd.map(r => r.title)
+    expect(titles).not.toContain(blogToDelete.title)
+  })
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
