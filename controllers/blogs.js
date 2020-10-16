@@ -4,13 +4,14 @@ const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
 
-const getTokenFrom = request => {
-  const auth = request.get('authorization')
-  if (auth && auth.toLowerCase().startsWith('bearer ')) {
-    return auth.substring(7)
-  }
-  return null
-}
+// Remove this function after adding it to a middleware
+// const getTokenFrom = request => {
+//   const auth = request.get('authorization')
+//   if (auth && auth.toLowerCase().startsWith('bearer ')) {
+//     return auth.substring(7)
+//   }
+//   return null
+// }
 
 blogsRouter.get('/', async (request, response, next) => {
   try {
@@ -69,12 +70,14 @@ blogsRouter.delete('/:id', async (request, response, next) => {
 blogsRouter.post('/', async (request, response, next) => {
   try {
     const body = request.body
-    const token = getTokenFrom(request)
+    // const token = getTokenFrom(request)
+    // Token is now placed in the request using the middleware TokenExtractor
     // eslint-disable-next-line no-undef
-    const decodedToken = jwt.verify(token, process.env.SECRET)
-    if (!token || !decodedToken) {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    if (!decodedToken) {
       return response.status(401).json({ error: 'missing or invalid token' })
     }
+
     const user = await User.findById(decodedToken.id)
 
     if (!body || !body.title || !body.author || !body.url) {
