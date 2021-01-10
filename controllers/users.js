@@ -48,4 +48,17 @@ usersRouter.get('/', async (request, response, next) => {
   }
 })
 
+usersRouter.get('/:id', async (request, response, next) => {
+  try {
+    const user = await User
+      .findById(request.params.id)
+      .populate('user', { username: 1, name: 1 })
+      .populate('blogs', { url: 1, title: 1, author: 1 })
+    user ? response.json(user) : response.status(404).end()
+
+  } catch (error) {
+    next(error)
+  }
+})
+
 module.exports = usersRouter
