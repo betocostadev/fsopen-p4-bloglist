@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 // const logger = require('../utils/logger')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const Comment = require('../models/comment')
 
 // Remove this function after adding it to a middleware
 // const getTokenFrom = request => {
@@ -19,6 +20,7 @@ blogsRouter.get('/', async (request, response, next) => {
     const blogs = await Blog
       .find({})
       .populate('user', { username: 1, name: 1 })
+      .populate('comments', { comment: 1 })
     if (blogs) {
       response.json(blogs)
     } else {
@@ -107,7 +109,7 @@ blogsRouter.post('/', async (request, response, next) => {
       author: body.author,
       url: body.url,
       likes: body.likes || 0,
-      user: user._id
+      user: user._id,
     })
 
     const savedBlog = await blog.save()
@@ -115,6 +117,32 @@ blogsRouter.post('/', async (request, response, next) => {
     await user.save()
 
     response.json(savedBlog)
+
+  } catch (error) {
+    next(error)
+  }
+})
+
+blogsRouter.post('/:id/comments', async (request, response, next) => {
+  try {
+    body = request.body
+    if (!body || !body.comment) {
+      return response.status(400).json({
+        error: 'Content missing'
+      })
+    }
+
+    const blog = await Blog.findById(request.params.id)
+
+    const comment = new Comment({
+      comment: body.comment
+    })
+
+    const savedComment = await comment.save()
+    blog.comments = blog.comments.concat(savedComment._id)
+    await blog.save()
+
+    response.json(savedComment)
 
   } catch (error) {
     next(error)
