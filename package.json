@@ -7,7 +7,7 @@
     "start": "NODE_ENV=production node ./src/index.js",
     "dev": "NODE_ENV=development nodemon ./src/index.js",
     "build:ui": "rm -rf build && cd ../bloglist-front && npm run build --prod && cp -r build ../fsopen-p4-bloglist/",
-    "deploy": "git push heroku main",
+    "deploy": "git push heroku HEAD:main --force",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
     "logs:prod": "heroku logs --tail",
     "lint": "eslint .",
